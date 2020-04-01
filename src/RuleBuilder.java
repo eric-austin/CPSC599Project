@@ -72,11 +72,6 @@ public class RuleBuilder {
 	public static ArrayList<Rule> buildRuleSet(String[] lines, String classFeature) {
 		//set up new arraylist representing ruleset
 		ArrayList<Rule> ruleset = new ArrayList<Rule>();
-		//split up the node lines for parsing
-		String[][] splitNodes = new String[lines.length][];
-		for (int i = 0; i < lines.length; i++) {
-			splitNodes[i] = lines[i].split(" ");
-		}
 		//set up local vars to hold temp rule antecedent as we build it
 		int currentDepth = 0;
 		ArrayList<String> tempAnt = new ArrayList<>();
@@ -122,10 +117,22 @@ public class RuleBuilder {
 					tempAnt.remove(currentDepth);
 				}
 			} else {
-				//if next path is not to a leaf then we add to antecedent and increment depth
-				String[] split = line.split(" ");
-				tempAnt.add(split[split.length - 3] + " = " + split[split.length - 1]);
-				currentDepth++;
+				//if next path is not to a leaf then we check whether depth is the current, if not have to wind back
+				//before adding and continuing
+				int leafDepth = getDepth(line);
+				if (leafDepth == currentDepth) {
+					String[] split = line.split(" ");
+					tempAnt.add(split[split.length - 3] + " = " + split[split.length - 1]);
+					currentDepth++;
+				} else {
+					while (currentDepth > leafDepth) {
+						currentDepth--;
+						tempAnt.remove(currentDepth);
+					}
+					String[] split = line.split(" ");
+					tempAnt.add(split[split.length - 3] + " = " + split[split.length - 1]);
+					currentDepth++;
+				}
 			}
 		}
 		
