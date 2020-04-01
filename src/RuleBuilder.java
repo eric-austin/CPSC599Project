@@ -15,7 +15,7 @@ public class RuleBuilder {
 		String filepath = null;
 		int target;
 		
-		double minOccurences = 00.0;
+		double minOccurences = 10.0;
 		double minAccuracy = 0.8;
 		
 		//check whether correct number of command line args given
@@ -169,10 +169,22 @@ public class RuleBuilder {
 					}
 				}
 			} else {
-				//if next path is not to a leaf then we add to antecedent and increment depth
-				String[] split = line.split(" ");
-				tempAnt.add(split[split.length - 3] + " = " + split[split.length - 1]);
-				currentDepth++;
+				//if next path is not to a leaf then we check whether depth is the current, if not have to wind back
+				//before adding and continuing
+				int leafDepth = getDepth(line);
+				if (leafDepth == currentDepth) {
+					String[] split = line.split(" ");
+					tempAnt.add(split[split.length - 3] + " = " + split[split.length - 1]);
+					currentDepth++;
+				} else {
+					while (currentDepth > leafDepth) {
+						currentDepth--;
+						tempAnt.remove(currentDepth);
+					}
+					String[] split = line.split(" ");
+					tempAnt.add(split[split.length - 3] + " = " + split[split.length - 1]);
+					currentDepth++;
+				}
 			}
 		}
 		
