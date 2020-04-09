@@ -1,8 +1,10 @@
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Scanner;
 
-import weka.classifiers.trees.J48;
 import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
@@ -11,26 +13,29 @@ public class RuleBuilder {
 
 	public static void main(String[] args) {
 		J48Mod tree = new J48Mod();
-		
+
 		String filepath = null;
+		String givenRulesPath = null;
 		int target;
-		
+
 		double minOccurences = 10.0;
 		double minAccuracy = 0.8;
-		
+
 		//check whether correct number of command line args given
-		if (args.length != 2) {
-			System.err.println("Error! two command line arguments needed:\nFilepath to dataset and index of target attribute");
+		if (args.length != 3) {
+			System.err.println("Error! three command line arguments needed:\nFilepath to dataset, index of target attribute, and filepath to known rules");
 			return;
 		} else {
 			filepath = args[0];
 			target = Integer.parseInt(args[1]);
+			givenRulesPath = args[2];
 			System.out.println("Dataset " + filepath);
 			System.out.println("Target " + target);
 		}
-		
+
 		//try opening file and importing dataset
 		try {
+		    ArrayList<Rule> givenRules = readRules(givenRulesPath); //inputted rules
 			DataSource source = new DataSource(filepath);
 			Instances data = source.getDataSet();
 			//set attribute to target class based on user given input
@@ -45,31 +50,36 @@ public class RuleBuilder {
 			//break into the lines and remove header/footer to get only lines representing nodes
 			String[] lines = treeString.split("\n");
 			lines = getNodes(lines);
-			
+
 			//build rules from lines
 			Attribute classAttribute = data.classAttribute();
 			String classAttString = classAttribute.toString();
 			//need to grab name of class attribute/feature
 			classAttString = (classAttString.split(" "))[1];
 			ArrayList<Rule> ruleSet = buildRuleSet(lines, classAttString, minOccurences, minAccuracy);
-			
+
+			for(int i = 0; i < givenRules.size(); i++) {
+			    Rule givenRule = givenRules.get(i);
+			    ruleSet.removeIf(learnedRule -> (learnedRule.equivalent(givenRule))); //filter out known rules
+			}
+
 			System.out.println(tree.toSummaryString());
 			System.out.println("We found " + ruleSet.size() + " rules.");
 			for (Rule r : ruleSet) {
 				System.out.println(r.toString());
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
-	
+
 	public static String[] getNodes(String[] lines) {
 		String[] nodes = Arrays.copyOfRange(lines, 3, lines.length - 4);
 		return nodes;
 	}
-	
+
 	public static ArrayList<Rule> buildRuleSet(String[] lines, String classFeature, double minOccurences, double minAccuracy) {
 		//set up new arraylist representing ruleset
 		ArrayList<Rule> ruleset = new ArrayList<Rule>();
@@ -187,10 +197,10 @@ public class RuleBuilder {
 				}
 			}
 		}
-		
+
 		return ruleset;
 	}
-	
+
 	public static int getDepth(String line) {
 		int depth = 0;
 		String[] strings = line.split(" ");
@@ -204,6 +214,25 @@ public class RuleBuilder {
 
 	public static boolean isLeaf(String line) {
 		return (line.contains(":"));
+	}
+
+	public static ArrayList<Rule> readRules(String filepath) throws FileNotFoundException {
+	    ArrayList<Rule> rules = new ArrayList<>();
+	    File input = new File(filepath);
+	    Scanner in = new Scanner(input);
+	    String line;
+	    ArrayList<String> ant;
+	    while(in.hasNext()) {
+	        line = in.nextLine();
+	        String[] splitLine = line.split(",");
+	        ant = new ArrayList<>();
+	        for(int i = 0; i < splitLine.length - 1; i++) {
+	            ant.add(splitLine[i].trim()); //get rid of trailing/leading whitespace if there is any
+	        }
+	        rules.add(new Rule(ant, splitLine[splitLine.length -1].trim())); //each line is a rule - consequent is last element in line, antecedent is everything else
+	    }
+	    in.close();
+	    return rules;
 	}
 
 }
