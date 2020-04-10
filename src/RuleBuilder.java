@@ -58,9 +58,17 @@ public class RuleBuilder {
 			classAttString = (classAttString.split(" "))[1];
 			ArrayList<Rule> ruleSet = buildRuleSet(lines, classAttString, minOccurences, minAccuracy);
 
+			//filter rules
 			for(int i = 0; i < givenRules.size(); i++) {
-			    Rule givenRule = givenRules.get(i);
-			    ruleSet.removeIf(learnedRule -> (learnedRule.equivalent(givenRule))); //filter out known rules
+			    for (int j = 0; j < ruleSet.size(); j++) {
+			    	//if rules are equivalent then we want to keep shorter rule
+			    	if (ruleSet.get(j).equivalent(givenRules.get(i))) {
+			    		if (givenRules.get(i).antecedent.size() < ruleSet.get(j).antecedent.size()) {
+			    			ruleSet.remove(j);
+			    			ruleSet.add(j, givenRules.get(i));
+			    		}
+			    	}
+			    }
 			}
 
 			System.out.println(tree.toSummaryString());
