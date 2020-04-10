@@ -66,14 +66,20 @@ public class RuleBuilder {
 			    		if (givenRules.get(i).antecedent.size() < ruleSet.get(j).antecedent.size()) {
 			    			ruleSet.remove(j);
 			    			ruleSet.add(j, givenRules.get(i));
+			    		} else {
+			    			givenRules.remove(i);
 			    		}
 			    	}
 			    }
 			}
 
 			System.out.println(tree.toSummaryString());
-			System.out.println("We found " + ruleSet.size() + " rules.");
+			System.out.println("We found " + ruleSet.size() + " rules:");
 			for (Rule r : ruleSet) {
+				System.out.println(r.toString());
+			}
+			System.out.println("And kept these " + givenRules.size() + " given rules:");
+			for (Rule r : givenRules) {
 				System.out.println(r.toString());
 			}
 
