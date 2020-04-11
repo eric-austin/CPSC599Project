@@ -18,7 +18,7 @@ public class RuleBuilder {
 		String givenRulesPath = null;
 		int target;
 
-		double minOccurences = 1000.0;
+		double minOccurences = 50000.0;
 		double minAccuracy = 0.8;
 
 		//check whether correct number of command line args given
@@ -36,6 +36,7 @@ public class RuleBuilder {
 		//try opening file and importing dataset
 		try {
 		    ArrayList<Rule> givenRules = readRules(givenRulesPath); //inputted rules
+		    ArrayList<Rule> conflictingRules = new ArrayList<>();
 			DataSource source = new DataSource(filepath);
 			Instances data = source.getDataSet();
 			//set attribute to target class based on user given input
@@ -62,13 +63,17 @@ public class RuleBuilder {
 			for(int i = 0; i < givenRules.size(); i++) {
 			    for (int j = 0; j < ruleSet.size(); j++) {
 			    	//if rules are equivalent then we want to keep shorter rule
-			    	if (ruleSet.get(j).equivalent(givenRules.get(i))) {
+			    	if (ruleSet.get(j).equivalent(givenRules.get(i)) && ruleSet.get(j).consequent.equals(givenRules.get(i).consequent)) {
 			    		if (givenRules.get(i).antecedent.size() < ruleSet.get(j).antecedent.size()) {
 			    			ruleSet.remove(j);
 			    			ruleSet.add(j, givenRules.get(i));
 			    		} else {
+			    		    //conflictingRules.add(givenRules.get(i));
 			    			givenRules.remove(i);
 			    		}
+			    	} else if (ruleSet.get(j).equivalent(givenRules.get(i))) {
+			    	    conflictingRules.add(givenRules.get(i));
+			    	    givenRules.remove(i);
 			    	}
 			    }
 			}
@@ -81,6 +86,12 @@ public class RuleBuilder {
 			System.out.println("And kept these " + givenRules.size() + " given rules:");
 			for (Rule r : givenRules) {
 				System.out.println(r.toString());
+			}
+			if(conflictingRules.size() > 0) {
+			    System.out.println("These " + conflictingRules.size() + " given rules conflicted with learned rules: ");
+			    for(Rule r : conflictingRules) {
+			        System.out.println(r.toString());
+			    }
 			}
 
 		} catch (Exception e) {

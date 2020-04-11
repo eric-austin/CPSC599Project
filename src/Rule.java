@@ -9,9 +9,9 @@ public class Rule {
 		antecedent = new ArrayList<String>(ant);
 		consequent = new String(con);
 	}
-	
+
 	public boolean equivalent(Rule rule2) {  //check if consequent is the same, and check if all rules in the smaller rule occur in the larger rule
-	    if(!this.consequent.equals(rule2.consequent)) return false;
+	    //if(!this.consequent.equals(rule2.consequent)) return false;
 
 	    if(this.antecedent.size() > rule2.antecedent.size()) { // if this rule is bigger than the given rule check if  every element in given rule occurs in this rule
 	        for(int i = 0; i < rule2.antecedent.size(); i++) {
@@ -24,7 +24,7 @@ public class Rule {
 	    }
 	    return true;
 	}
-	
+
 	@Override
 	public String toString() {
 		return (antecedent.toString() + " -> " + consequent);
