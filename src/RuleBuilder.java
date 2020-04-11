@@ -18,7 +18,7 @@ public class RuleBuilder {
 		String givenRulesPath = null;
 		int target;
 
-		double minOccurences = 10.0;
+		double minOccurences = 1000.0;
 		double minAccuracy = 0.8;
 
 		//check whether correct number of command line args given
@@ -41,7 +41,7 @@ public class RuleBuilder {
 			//set attribute to target class based on user given input
 			data.setClassIndex(target);
 			//set up options for tree
-			String[] options = weka.core.Utils.splitOptions("-M 20 -R -N 10");
+			String[] options = weka.core.Utils.splitOptions("-M 200 -R -N 10");
 			tree.setOptions(options);
 			//use J48 tree and given options to build decision tree
 			tree.buildClassifier(data);
