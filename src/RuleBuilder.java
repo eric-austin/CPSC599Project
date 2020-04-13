@@ -18,8 +18,8 @@ public class RuleBuilder {
 		String givenRulesPath = null;
 		int target;
 
-		double minOccurences = 1000.0;
-		double minAccuracy = 0.8;
+		double minOccurences = 5000.0;
+		double minAccuracy = 0.95;
 
 		//check whether correct number of command line args given
 		if (args.length != 3) {
@@ -63,19 +63,21 @@ public class RuleBuilder {
 			for(int i = 0; i < givenRules.size(); i++) {
 			    for (int j = 0; j < ruleSet.size(); j++) {
 			    	//if rules are equivalent then we want to keep shorter rule
-			    	if (ruleSet.get(j).equivalent(givenRules.get(i)) /*&& ruleset.get(j).consequent.equals(givenRules.get(i)*/) {
+			    	if (ruleSet.get(j).equivalent(givenRules.get(i))) {
 			    		if (givenRules.get(i).antecedent.size() < ruleSet.get(j).antecedent.size()) {
 			    			ruleSet.remove(j);
 			    			ruleSet.add(j, givenRules.get(i));
 			    		} else {
-			    		    //conflictingRules.add(givenRules.get(i));
 			    			givenRules.remove(i);
+			    			i--;
+			    			break;
 			    		}
+			    	} else if (ruleSet.get(j).contradict(givenRules.get(i))) {
+			    	    conflictingRules.add(givenRules.get(i));
+			    	    givenRules.remove(i);
+			    	    i--;
+			    	    break;
 			    	}
-			    	//} else if (ruleSet.get(j).equivalent(givenRules.get(i))) {
-			    	//    conflictingRules.add(givenRules.get(i));
-			    	//    givenRules.remove(i);
-			    	//}
 			    }
 			}
 
