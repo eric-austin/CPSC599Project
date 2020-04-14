@@ -1,6 +1,9 @@
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -18,24 +21,25 @@ public class RuleBuilder {
 		String givenRulesPath = null;
 		int target;
 
-		double minOccurences = 1000.0;
+		double minOccurences = 5000.0;
 		double minAccuracy = 0.8;
 
 		//check whether correct number of command line args given
-		if (args.length != 3) {
-			System.err.println("Error! three command line arguments needed:\nFilepath to dataset, index of target attribute, and filepath to known rules");
+		if (args.length != 5) {
+			System.err.println("Error! Five command line arguments needed:\nFilepath to dataset, index of target attribute, filepath to known rules, minimum accuracy and minimum number of occurrences");
 			return;
 		} else {
 			filepath = args[0];
 			target = Integer.parseInt(args[1]);
 			givenRulesPath = args[2];
-			System.out.println("Dataset " + filepath);
-			System.out.println("Target " + target);
+			minAccuracy = Double.parseDouble(args[3]);
+			minOccurences = Double.parseDouble(args[4]);
 		}
 
 		//try opening file and importing dataset
 		try {
 		    ArrayList<Rule> givenRules = readRules(givenRulesPath); //inputted rules
+		    ArrayList<Rule> conflictingRules = new ArrayList<>();
 			DataSource source = new DataSource(filepath);
 			Instances data = source.getDataSet();
 			//set attribute to target class based on user given input
@@ -68,20 +72,40 @@ public class RuleBuilder {
 			    			ruleSet.add(j, givenRules.get(i));
 			    		} else {
 			    			givenRules.remove(i);
+			    			i--;
+			    			break;
 			    		}
+			    	} else if (ruleSet.get(j).contradict(givenRules.get(i))) {
+			    	    conflictingRules.add(givenRules.get(i));
+			    	    givenRules.remove(i);
+			    	    i--;
+			    	    break;
 			    	}
 			    }
 			}
 
-			System.out.println(tree.toSummaryString());
+			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(classAttString + "-" + minAccuracy + "_" + minOccurences + ".txt")));
 			System.out.println("We found " + ruleSet.size() + " rules:");
+			out.println("We found " + ruleSet.size() + " rules:");
 			for (Rule r : ruleSet) {
 				System.out.println(r.toString());
+				out.println(r.toString());
 			}
 			System.out.println("And kept these " + givenRules.size() + " given rules:");
+			out.println("And kept these " + givenRules.size() + " given rules:");
 			for (Rule r : givenRules) {
 				System.out.println(r.toString());
+				out.println(r.toString());
 			}
+			if(conflictingRules.size() > 0) {
+			    System.out.println("These " + conflictingRules.size() + " given rules conflicted with learned rules: ");
+			    out.println("These " + conflictingRules.size() + " given rules conflicted with learned rules: ");
+			    for(Rule r : conflictingRules) {
+			        System.out.println(r.toString());
+			        out.println(r.toString());
+			    }
+			}
+			out.close();
 
 		} catch (Exception e) {
 			e.printStackTrace();
