@@ -65,6 +65,6 @@ The output is a list of rules found by the system followed by any of the rules k
 *****
 NOTE
 *****
-The Weka code throws a warning message about an illegal reflective access operation. This relates to something that is happening in the weka code itself. This doesn't crash the program or stop it working, it is just a warning. You can disregard this warning.
+The Weka code may throw a warning message about an illegal reflective access operation. This relates to something that is happening in the weka code itself. This doesn't crash the program or stop it working, it is just a warning. You can disregard this warning. Doesn't seem to throw this warning on the linux compute servers, but did on some of own machines.
 
-The program takes several minutes to run after that warning is thrown, give it some time to run and the output will come.
+The program takes several minutes to run (after that warning is thrown), give it some time to run and the output will come.
